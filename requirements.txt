@@ -1,0 +1,20 @@
+# Dependencias de Python para el Duplicador de Pantalla y Audio Android
+# Este proyecto utiliza principalmente la librería estándar de Python
+
+# No se requieren dependencias externas de Python ya que el script utiliza:
+# - subprocess (librería estándar)
+# - sys (librería estándar)
+# - os (librería estándar)
+# - argparse (librería estándar)
+# - time (librería estándar)
+# - re (librería estándar)
+# - typing (librería estándar desde Python 3.5+)
+
+# Dependencias del sistema (deben instalarse por separado):
+# - Android Debug Bridge (ADB)
+# - scrcpy 2.0+
+
+# Para desarrollo y testing (opcional):
+# pytest>=7.0.0
+# black>=22.0.0
+# flake8>=4.0.0
