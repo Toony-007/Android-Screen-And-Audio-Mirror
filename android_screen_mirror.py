@@ -274,6 +274,9 @@ class AndroidMirror:
         if args.max_size:
             scrcpy_cmd.extend(["--max-size", str(args.max_size)])
         
+        if args.fullscreen:
+            scrcpy_cmd.append("--fullscreen")
+
         if args.bit_rate:
             scrcpy_cmd.extend(["--bit-rate", args.bit_rate])
         
@@ -396,6 +399,10 @@ Ejemplos de uso:
     parser.add_argument(
         "--no-video-optimization", action="store_true",
         help="Deshabilitar optimizaciones automáticas de video"
+    )
+    parser.add_argument(
+        "--fullscreen", action="store_true",
+        help="Abrir scrcpy en modo pantalla completa"
     )
     
     return parser
