@@ -265,6 +265,10 @@ class AndroidMirror:
     def _build_scrcpy_command(self, args: argparse.Namespace) -> List[str]:
         """Construye el comando scrcpy con verificación de compatibilidad."""
         scrcpy_cmd = ["scrcpy"]
+
+        # Si la conexión es Wi-Fi y tenemos una IP, especificar el dispositivo
+        if self.connection_type == "wifi" and self.device_ip:
+            scrcpy_cmd.extend(["-s", f"{self.device_ip}:5555"])
         
         # Añadir parámetros opcionales
         if args.max_size:
