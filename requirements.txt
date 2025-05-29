@@ -8,7 +8,8 @@
 # - argparse (librería estándar)
 # - time (librería estándar)
 # - re (librería estándar)
-# - typing (librería estándar desde Python 3.5+)
+# typing (librería estándar desde Python 3.5+)
+customtkinter>=5.2.0 # Para la interfaz gráfica de usuario
 
 # Dependencias del sistema (deben instalarse por separado):
 # - Android Debug Bridge (ADB)
