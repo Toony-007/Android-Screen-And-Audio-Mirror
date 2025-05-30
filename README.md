@@ -215,8 +215,8 @@ adb shell ip route | grep wlan
 
 ```bash
 # Clona el repositorio completo
-git clone https://github.com/Toony-007/Duplicador-de-Pantalla-y-Audio-Android-a-PC.git
-cd Duplicador-de-Pantalla-y-Audio-Android-a-PC
+git clone https://github.com/Toony-007/Android-Screen-And-Audio-Mirror.git
+cd Android-Screen-And-Audio-Mirror
 
 # Instala dependencias automáticamente
 python install_dependencies.py
