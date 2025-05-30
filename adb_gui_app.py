@@ -369,13 +369,19 @@ class App(customtkinter.CTk):
         
         selected_item = self.devices_listbox.get(selected_indices[0])
         # Extraer el serial (asumiendo formato "serial (status)" o solo "serial" si no hay status)
-        match = re.match(r"^([a-zA-Z0-9._-]+)(?:\s*\((device|offline|unauthorized)\))?$", selected_item.strip())
+        match = re.match(r"^([a-zA-Z0-9._:-]+)(?:\s*\((device|offline|unauthorized)\))?$", selected_item.strip())
         if not match:
             self.log_message(f"Error: No se pudo extraer el serial del dispositivo de la selección: '{selected_item}'")
             messagebox.showerror("Error de Dispositivo", f"No se pudo procesar la selección del dispositivo: '{selected_item}'. Asegúrate de que el formato sea correcto.")
             return
         
         device_serial = match.group(1)
+        if "(device)" in selected_item and ":" in device_serial and self.android_mirror.connection_type == "wifi":
+            # Si es una conexión Wi-Fi y el formato es IP:Puerto (device), usarlo directamente
+            pass
+        elif self.android_mirror.connection_type == "wifi":
+            # Si es Wi-Fi pero el serial no incluye el puerto, añadirlo
+            device_serial = f"{device_serial}:5555"
         # El grupo 2 es el estado (device|offline|unauthorized) si la parte opcional coincide.
         # Si la parte opcional no coincide, match.group(2) sería None o no existiría.
         # Accedemos de forma segura:
