@@ -153,14 +153,21 @@ class App(customtkinter.CTk):
         # --- Panel Izquierdo (Controles) ---
         self.left_panel = customtkinter.CTkFrame(self, corner_radius=10)
         self.left_panel.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-        # Configurar pesos de las filas del panel izquierdo para mejor responsividad
-        self.left_panel.grid_rowconfigure(1, weight=1) # Fila para devices_frame (Listbox) para que pueda expandirse
-        # Las otras filas (0, 2, 3, 4, 5) por defecto tendrán weight=0 y no se expandirán verticalmente.
+        # Configurar pesos de las filas y columnas del panel izquierdo para mejor responsividad
+        self.left_panel.grid_columnconfigure(0, weight=1) # Asegurar que la columna se expanda
+        self.left_panel.grid_rowconfigure(0, weight=0) # adb_frame
+        self.left_panel.grid_rowconfigure(1, weight=1) # devices_frame (Listbox) para que pueda expandirse
+        self.left_panel.grid_rowconfigure(2, weight=0) # ip_conn_frame
+        self.left_panel.grid_rowconfigure(3, weight=0) # scrcpy_options_frame (si se moviera aquí)
+        self.left_panel.grid_rowconfigure(4, weight=0) # theme_frame
+        self.left_panel.grid_rowconfigure(5, weight=0) # theme_frame (si se moviera aquí)
 
         # --- Panel Derecho (Opciones y Log) ---
         self.right_panel = customtkinter.CTkFrame(self, corner_radius=10)
         self.right_panel.grid(row=0, column=1, padx=(0,10), pady=10, sticky="nsew")
-        self.right_panel.grid_rowconfigure(1, weight=1) # Para que el log ocupe espacio
+        self.right_panel.grid_columnconfigure(0, weight=1) # Asegurar que la columna se expanda
+        self.right_panel.grid_rowconfigure(0, weight=0) # scrcpy_scrollable_frame
+        self.right_panel.grid_rowconfigure(1, weight=1) # log_frame para que el log ocupe espacio
 
         self._create_widgets()
         # self.android_mirror.check_dependencies() # Se llamará explícitamente después de la asignación completa en __main__
@@ -182,96 +189,107 @@ class App(customtkinter.CTk):
 
     def _create_widgets(self):
         # --- Controles ADB (Panel Izquierdo) ---
-        adb_frame = customtkinter.CTkFrame(self.left_panel, corner_radius=5)
+        adb_frame = customtkinter.CTkFrame(self.left_panel, corner_radius=10) # Aumentar corner_radius
         adb_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
         adb_frame.grid_columnconfigure(0, weight=1)
 
-        customtkinter.CTkLabel(adb_frame, text="Control ADB", font=customtkinter.CTkFont(weight="bold")).grid(row=0, column=0, columnspan=2, pady=(0,5))
-        self.restart_adb_btn = customtkinter.CTkButton(adb_frame, text="Reiniciar Servidor ADB", command=self.restart_adb_server_threaded)
+        customtkinter.CTkLabel(adb_frame, text="Control ADB", font=customtkinter.CTkFont(weight="bold", size=16)).grid(row=0, column=0, columnspan=2, pady=(0,10))
+        self.restart_adb_btn = customtkinter.CTkButton(adb_frame, text="Reiniciar Servidor ADB", command=self.restart_adb_server_threaded, corner_radius=8)
         self.restart_adb_btn.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
         # Indicador de estado ADB (simplificado)
-        self.adb_status_label = customtkinter.CTkLabel(adb_frame, text="Estado ADB: Desconocido")
+        self.adb_status_label = customtkinter.CTkLabel(adb_frame, text="Estado ADB: Desconocido", font=customtkinter.CTkFont(size=12))
         self.adb_status_label.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
         # --- Gestión de Dispositivos (Panel Izquierdo) ---
-        devices_frame = customtkinter.CTkFrame(self.left_panel, corner_radius=5)
+        devices_frame = customtkinter.CTkFrame(self.left_panel, corner_radius=10) # Aumentar corner_radius
         devices_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
         devices_frame.grid_columnconfigure(0, weight=1)
         devices_frame.grid_rowconfigure(1, weight=1)
 
-        customtkinter.CTkLabel(devices_frame, text="Gestión de Dispositivos", font=customtkinter.CTkFont(weight="bold")).grid(row=0, column=0, columnspan=2, pady=(0,5))
+        customtkinter.CTkLabel(devices_frame, text="Gestión de Dispositivos", font=customtkinter.CTkFont(weight="bold", size=16)).grid(row=0, column=0, columnspan=2, pady=(0,10))
         
-        self.scan_devices_btn = customtkinter.CTkButton(devices_frame, text="Escanear Dispositivos", command=self.scan_devices_threaded)
+        self.scan_devices_btn = customtkinter.CTkButton(devices_frame, text="Escanear Dispositivos", command=self.scan_devices_threaded, corner_radius=8)
         self.scan_devices_btn.grid(row=2, column=0, padx=5, pady=5, sticky="ew")
 
-        self.devices_listbox = tk.Listbox(devices_frame, height=6, exportselection=False, background=self._apply_appearance_mode_to_tk_widget("bg"), fg=self._apply_appearance_mode_to_tk_widget("fg"), selectbackground=self._apply_appearance_mode_to_tk_widget("select_bg"), relief=tk.FLAT, borderwidth=0)
+        # Mejorar el Listbox con un CTkScrollableFrame y un CTkTextbox o similar para mejor integración visual
+        # Por ahora, ajustamos el Listbox existente para que se vea mejor
+        self.devices_listbox = tk.Listbox(devices_frame, height=6, exportselection=False, 
+                                          background=self._apply_appearance_mode_to_tk_widget("bg"), 
+                                          fg=self._apply_appearance_mode_to_tk_widget("fg"), 
+                                          selectbackground=self._apply_appearance_mode_to_tk_widget("select_bg"), 
+                                          selectforeground=self._apply_appearance_mode_to_tk_widget("select_fg"), # Añadir selectforeground
+                                          relief="flat", borderwidth=0, highlightthickness=0, # Eliminar bordes y resaltados
+                                          font=("Arial", 10)) # Cambiar fuente
         self.devices_listbox.grid(row=1, column=0, columnspan=2, padx=5, pady=5, sticky="nsew")
-        # Scrollbar para Listbox (si es necesario, aunque CTk podría manejarlo mejor con CTkScrollableFrame)
-        # devices_scrollbar = customtkinter.CTkScrollbar(devices_frame, command=self.devices_listbox.yview)
-        # devices_scrollbar.grid(row=1, column=1, sticky='ns')
-        # self.devices_listbox.configure(yscrollcommand=devices_scrollbar.set)
 
-        self.connect_selected_btn = customtkinter.CTkButton(devices_frame, text="Iniciar Mirroring Dispositivo Seleccionado", command=self.start_mirroring_selected_threaded)
+        self.connect_selected_btn = customtkinter.CTkButton(devices_frame, text="Iniciar Mirroring Dispositivo Seleccionado", command=self.start_mirroring_selected_threaded, corner_radius=8)
         self.connect_selected_btn.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
 
         # --- Conexión Manual IP (Panel Izquierdo) ---
-        ip_conn_frame = customtkinter.CTkFrame(self.left_panel, corner_radius=5)
+        ip_conn_frame = customtkinter.CTkFrame(self.left_panel, corner_radius=10) # Aumentar corner_radius
         ip_conn_frame.grid(row=2, column=0, padx=10, pady=10, sticky="ew")
         ip_conn_frame.grid_columnconfigure(1, weight=1)
 
-        customtkinter.CTkLabel(ip_conn_frame, text="Conexión Manual IP", font=customtkinter.CTkFont(weight="bold")).grid(row=0, column=0, columnspan=2, pady=(0,5))
-        customtkinter.CTkLabel(ip_conn_frame, text="IP:Puerto").grid(row=1, column=0, padx=5, pady=5, sticky="w")
-        self.ip_entry = customtkinter.CTkEntry(ip_conn_frame, placeholder_text="Ej: 192.168.1.100:5555")
+        customtkinter.CTkLabel(ip_conn_frame, text="Conexión Manual IP", font=customtkinter.CTkFont(weight="bold", size=16)).grid(row=0, column=0, columnspan=2, pady=(0,10))
+        customtkinter.CTkLabel(ip_conn_frame, text="IP:Puerto", font=customtkinter.CTkFont(size=12)).grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        self.ip_entry = customtkinter.CTkEntry(ip_conn_frame, placeholder_text="Ej: 192.168.1.100:5555", corner_radius=8)
         self.ip_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
-        self.connect_ip_btn = customtkinter.CTkButton(ip_conn_frame, text="Conectar por IP", command=self.connect_ip_threaded)
+        self.connect_ip_btn = customtkinter.CTkButton(ip_conn_frame, text="Conectar por IP", command=self.connect_ip_threaded, corner_radius=8)
         self.connect_ip_btn.grid(row=2, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
 
         # --- Opciones de Scrcpy (Panel Derecho) ---
         # Usar CTkScrollableFrame para las opciones de Scrcpy para manejar el desbordamiento
-        scrcpy_scrollable_frame = customtkinter.CTkScrollableFrame(self.right_panel, label_text="Opciones de Scrcpy", label_font=customtkinter.CTkFont(weight="bold"), corner_radius=5)
+        scrcpy_scrollable_frame = customtkinter.CTkScrollableFrame(self.right_panel, label_text="Opciones de Scrcpy", 
+                                                                   label_font=customtkinter.CTkFont(weight="bold", size=16), 
+                                                                   corner_radius=10) # Aumentar corner_radius
         scrcpy_scrollable_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
         # El frame interno del CTkScrollableFrame es el que contendrá los widgets
         scrcpy_options_frame = scrcpy_scrollable_frame
 
         self.scrcpy_max_size_var = tk.StringVar(value="1024") # Default max-size
-        customtkinter.CTkLabel(scrcpy_options_frame, text="Max Size (ej: 1024, 0 para original):").grid(row=1, column=0, padx=5, pady=2, sticky="w")
-        customtkinter.CTkEntry(scrcpy_options_frame, textvariable=self.scrcpy_max_size_var).grid(row=1, column=1, padx=5, pady=2, sticky="ew")
+        customtkinter.CTkLabel(scrcpy_options_frame, text="Max Size (ej: 1024, 0 para original):", font=customtkinter.CTkFont(size=12)).grid(row=1, column=0, padx=5, pady=2, sticky="w")
+        customtkinter.CTkEntry(scrcpy_options_frame, textvariable=self.scrcpy_max_size_var, corner_radius=8).grid(row=1, column=1, padx=5, pady=2, sticky="ew")
 
         self.scrcpy_bit_rate_var = tk.StringVar(value="8M") # Default bit-rate
-        customtkinter.CTkLabel(scrcpy_options_frame, text="Bit Rate (ej: 8M, 2000k):").grid(row=2, column=0, padx=5, pady=2, sticky="w")
-        customtkinter.CTkEntry(scrcpy_options_frame, textvariable=self.scrcpy_bit_rate_var).grid(row=2, column=1, padx=5, pady=2, sticky="ew")
+        customtkinter.CTkLabel(scrcpy_options_frame, text="Bit Rate (ej: 8M, 2000k):", font=customtkinter.CTkFont(size=12)).grid(row=2, column=0, padx=5, pady=2, sticky="w")
+        customtkinter.CTkEntry(scrcpy_options_frame, textvariable=self.scrcpy_bit_rate_var, corner_radius=8).grid(row=2, column=1, padx=5, pady=2, sticky="ew")
 
         self.scrcpy_no_control_var = tk.BooleanVar()
-        customtkinter.CTkCheckBox(scrcpy_options_frame, text="Sin Control (Read-only)", variable=self.scrcpy_no_control_var).grid(row=3, column=0, columnspan=2, padx=5, pady=2, sticky="w")
+        customtkinter.CTkCheckBox(scrcpy_options_frame, text="Sin Control (Read-only)", variable=self.scrcpy_no_control_var, corner_radius=8, font=customtkinter.CTkFont(size=12)).grid(row=3, column=0, columnspan=2, padx=5, pady=2, sticky="w")
 
         self.scrcpy_no_audio_var = tk.BooleanVar(value=True) # Default a no audio para evitar problemas si no está configurado sndcpy
-        customtkinter.CTkCheckBox(scrcpy_options_frame, text="Sin Audio (Solo Video)", variable=self.scrcpy_no_audio_var).grid(row=4, column=0, columnspan=2, padx=5, pady=2, sticky="w")
+        customtkinter.CTkCheckBox(scrcpy_options_frame, text="Sin Audio (Solo Video)", variable=self.scrcpy_no_audio_var, corner_radius=8, font=customtkinter.CTkFont(size=12)).grid(row=4, column=0, columnspan=2, padx=5, pady=2, sticky="w")
 
         self.scrcpy_no_video_opt_var = tk.BooleanVar()
-        customtkinter.CTkCheckBox(scrcpy_options_frame, text="Desactivar Optimización de Video", variable=self.scrcpy_no_video_opt_var).grid(row=5, column=0, columnspan=2, padx=5, pady=2, sticky="w")
+        customtkinter.CTkCheckBox(scrcpy_options_frame, text="Desactivar Optimización de Video", variable=self.scrcpy_no_video_opt_var, corner_radius=8, font=customtkinter.CTkFont(size=12)).grid(row=5, column=0, columnspan=2, padx=5, pady=2, sticky="w")
 
         self.scrcpy_fullscreen_var = tk.BooleanVar()
-        customtkinter.CTkCheckBox(scrcpy_options_frame, text="Scrcpy en Pantalla Completa", variable=self.scrcpy_fullscreen_var).grid(row=6, column=0, columnspan=2, padx=5, pady=2, sticky="w")
+        customtkinter.CTkCheckBox(scrcpy_options_frame, text="Scrcpy en Pantalla Completa", variable=self.scrcpy_fullscreen_var, corner_radius=8, font=customtkinter.CTkFont(size=12)).grid(row=6, column=0, columnspan=2, padx=5, pady=2, sticky="w")
 
         # Asegurar que la columna 1 del frame de opciones se expanda para los Entry widgets
         scrcpy_options_frame.grid_columnconfigure(1, weight=1)
 
         # --- Selector de Tema (Panel Izquierdo - Abajo) ---
-        theme_frame = customtkinter.CTkFrame(self.left_panel, corner_radius=5)
+        theme_frame = customtkinter.CTkFrame(self.left_panel, corner_radius=10) # Aumentar corner_radius
         theme_frame.grid(row=5, column=0, padx=10, pady=10, sticky="ew")
-        customtkinter.CTkLabel(theme_frame, text="Tema:").pack(side="left", padx=5)
-        self.theme_menu = customtkinter.CTkOptionMenu(theme_frame, values=["System", "Light", "Dark"], command=self.change_appearance_mode)
+        customtkinter.CTkLabel(theme_frame, text="Tema:", font=customtkinter.CTkFont(size=12)).pack(side="left", padx=5)
+        self.theme_menu = customtkinter.CTkOptionMenu(theme_frame, values=["System", "Light", "Dark"], command=self.change_appearance_mode, corner_radius=8)
         self.theme_menu.pack(side="left", padx=5, expand=True, fill="x")
 
         # --- Log de Actividad (Panel Derecho - Abajo) ---
-        log_frame = customtkinter.CTkFrame(self.right_panel, corner_radius=5)
+        log_frame = customtkinter.CTkFrame(self.right_panel, corner_radius=10) # Aumentar corner_radius
         log_frame.grid(row=1, column=0, padx=10, pady=(0,10), sticky="nsew") # Ocupa el espacio restante
         log_frame.grid_rowconfigure(0, weight=1)
         log_frame.grid_columnconfigure(0, weight=1)
 
-        self.log_area = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, state='disabled', height=10, relief=tk.FLAT, borderwidth=0)
-        self.log_area.grid(row=0, column=0, sticky="nsew", padx=2, pady=2) # Pequeño padding interno
-        # Aplicar colores de CustomTkinter al ScrolledText
+        # Mejorar el ScrolledText para que parezca una consola moderna
+        self.log_area = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, state='disabled', height=10, 
+                                                relief="flat", borderwidth=0, highlightthickness=0, 
+                                                font=("Consolas", 10), # Fuente tipo consola
+                                                bg="#2B2B2B", fg="#00FF00", # Colores de consola (verde sobre negro)
+                                                insertbackground="white") # Cursor blanco
+        self.log_area.grid(row=0, column=0, sticky="nsew", padx=5, pady=5) # Aumentar padding interno
+        # Aplicar colores de CustomTkinter al ScrolledText (se sobrescribirán los de arriba si el tema es Light)
         self._configure_scrolledtext_colors()
 
     def _apply_appearance_mode_to_tk_widget(self, property_name):
@@ -279,11 +297,11 @@ class App(customtkinter.CTk):
         # Esto es una aproximación, puede no ser perfecto para todos los widgets/temas
         if customtkinter.get_appearance_mode() == "Dark":
             colors = {
-                "bg": "#2B2B2B", "fg": "#DCE4EE", "select_bg": "#1F6AA5"
+                "bg": "#2B2B2B", "fg": "#DCE4EE", "select_bg": "#1F6AA5", "select_fg": "#FFFFFF" # Añadir select_fg
             }
         else: # Light
             colors = {
-                "bg": "#EBEBEB", "fg": "#1A1A1A", "select_bg": "#3B8ED0"
+                "bg": "#EBEBEB", "fg": "#1A1A1A", "select_bg": "#3B8ED0", "select_fg": "#FFFFFF" # Añadir select_fg
             }
         return colors.get(property_name, None)
 
@@ -293,11 +311,20 @@ class App(customtkinter.CTk):
         if bg_color and fg_color:
             self.log_area.configure(background=bg_color, foreground=fg_color)
             # Para el Listbox también
-            self.devices_listbox.configure(background=bg_color, foreground=fg_color, selectbackground=self._apply_appearance_mode_to_tk_widget("select_bg"))
+            self.devices_listbox.configure(background=bg_color, foreground=fg_color, 
+                                           selectbackground=self._apply_appearance_mode_to_tk_widget("select_bg"),
+                                           selectforeground=self._apply_appearance_mode_to_tk_widget("select_fg")) # Añadir selectforeground
 
     def change_appearance_mode(self, new_mode):
         customtkinter.set_appearance_mode(new_mode)
         self._configure_scrolledtext_colors() # Re-aplicar colores a widgets Tk
+        # Forzar la reconfiguración de los colores del log_area para el modo oscuro
+        if new_mode == "Dark":
+            self.log_area.configure(bg="#2B2B2B", fg="#00FF00", insertbackground="white")
+        else:
+            self.log_area.configure(bg=self._apply_appearance_mode_to_tk_widget("bg"), 
+                                   fg=self._apply_appearance_mode_to_tk_widget("fg"), 
+                                   insertbackground=self._apply_appearance_mode_to_tk_widget("fg"))
         self.log_message(f"Tema cambiado a: {new_mode}")
 
     def toggle_fullscreen(self, event=None):
